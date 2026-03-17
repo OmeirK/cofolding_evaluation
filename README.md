@@ -2,6 +2,13 @@
 
 ## Code to postprocess and run ost on cofolded models
 
+Install/Activate the environment for prep scripts
+```
+mamba env create -f prep.yaml
+mamba activate prep
+```
+
+
 To preprocess the output, convert cofolding predictions to the openfold 3 format:
 ```
 python3 Py_convert_boltz_to_of3_fmt.py -bd=examples/boltz-2_results/ -od=examples/boltz-2_results_reformatted
@@ -12,6 +19,12 @@ Next, extract sdf and pdb files for the ligands and receptors:
 python3 util01_Py_extract_of3_ligand_sdfs.py -r=examples/boltz-2_results_reformatted/ -fd=examples/fragalysis_data/
 ```
 ## Code for running OST evaluations
+
+Install the environment for ost scripts
+```
+mamba env create -f ost211.yaml
+mamba activate ost211
+```
 
 Run the ost-ligand comparison script:
 ```
