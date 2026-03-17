@@ -18,6 +18,13 @@ Next, extract sdf and pdb files for the ligands and receptors:
 ```
 python3 util01_Py_extract_of3_ligand_sdfs.py -r=examples/boltz-2_results_reformatted/ -fd=examples/fragalysis_data/
 ```
+
+Calculate posebusters checks on the cofolded models:
+```
+python3 util01b_Pt_calc_posebusters.py -r=examples/boltz-2_results_reformatted/
+```
+This script outputs `posebusters_data.json` in each results folder
+
 ## Code for running OST evaluations
 
 Install the environment for ost scripts

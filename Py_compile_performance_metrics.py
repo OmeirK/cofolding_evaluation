@@ -5,12 +5,14 @@ import json
 import argparse
 import numpy as np
 import pandas as pd
+from posebusters import PoseBusters
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--result_dir', '-r', help='Directory with cofolding results, in OF3 format', required=True)
 parser.add_argument('--ost_ligand', '-ol', help='Directory with ost ligand results', required=True)
 parser.add_argument('--ost_receptor', '-or', help='Directory with ost receptor results', required=True)
+#parser.add_argument('--fragalysis_dir', '-f', help='Path to aligned/ fragalysis folder', required=True)
 parser.add_argument('--similarity_tsv', '-st', help='.tsv file with sucos_pocket_qcov similarity data', required=True)
 parser.add_argument('--method', '-m', choices=['of3p', 'rf3', 'protenix', 'boltz-1', 'boltz-2', 'af3'], help='Name of the method that was benchmarked', required=True)
 parser.add_argument('--outfile', '-o', help='Name of the output .tsv file', required=True)
@@ -131,6 +133,17 @@ def parse_lig_ost(ost_f):
 
     return lig_rmsd, lddt_pli, lddt_lp, pocket_bb_rmsd, chain_map_str
 
+def check_posebusters(mdl_lig, mdl_rec):
+    buster = PoseBusters(config="dock")
+    df = buster.bust([mdl_lig], None, mdl_rec)
+
+    pb_valid = True
+    for h in df.head():
+        if df[h].iloc[0] == False:
+            pb_valid = False
+
+    return pb_valid
+
 def read_training_similarity(sim_tsv):
     df = pd.read_csv(sim_tsv, delimiter='\t')
     sim_data = {}
@@ -149,7 +162,7 @@ def main():
     case_data = {}
     #outlines = ['target\tseed\tsample\tmethod\tlig_id\tlig_ref_ch\tlig_mdl_ch\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\t']
     #sucos_shape pocket_qcov sucos_shape_pocket_qcov
-    outlines = ['target\tseed\tsample\tmethod\tlig_id\tiptm\tpair_iptm\tis_succ\tis_proper\tlig_rmsd_ch_mapping\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\trec_rmsd\trec_lddt\ttm_score\trec_ch_mapping\tsucos_shape\tpocket_qcov\tsucos_shape_pocket_qcov']
+    outlines = ['target\tseed\tsample\tmethod\tlig_id\tpb_valid\tiptm\tpair_iptm\tis_succ\tis_proper\tlig_rmsd_ch_mapping\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\trec_rmsd\trec_lddt\ttm_score\trec_ch_mapping\tsucos_shape\tpocket_qcov\tsucos_shape_pocket_qcov']
     err_log = []
     # Parse all cases
     for case in tqdm.tqdm(os.listdir(args.ost_receptor)):
@@ -184,6 +197,11 @@ def main():
 
                 lig_ost_results = glob.glob(f'{args.ost_ligand}/{case}/{seed}/ost-{case}_{seed}_sample_{sample}_model_*.json')
                 lig_ost_results.sort()
+                
+                # Collect posebusters data for the system
+                pb_file = f'{args.result_dir}/{case}/{seed}/posebusters_data.json'
+                with open(pb_file) as f:
+                    pb_data = json.load(f)
 
                 rec_rmsd, rec_lddt, tm_score, rec_ch_mapping = parse_rec_ost(ost_result_path)
 
@@ -195,6 +213,13 @@ def main():
                     is_proper = False
                     lig_id = os.path.basename(l_ost).split('_')[-1][:-5]
                     
+                    #mdl_lig = f'{args.result_dir}/{case}/{seed}/{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
+                    #mdl_rec = f'{args.result_dir}/{case}/{seed}/{case}_{seed}_sample_{sample}_model_rec.pdb'
+                    #pb_valid = check_posebusters(mdl_lig, mdl_rec)
+                    mdl_lig_name = f'{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
+                    pb_valid = pb_data[mdl_lig_name]
+                    
+
                     # Weird janky way to check if the ligand of interest is in this file, but
                     # it should work
                     if (lig_id.startswith('LIG')) or (lig_id.startswith('l0')) or (lig_id.startswith('L:')):
@@ -216,7 +241,7 @@ def main():
 
                     # Save output data
                     outline = f'{case}\t{seed}\t{sample}\t{args.method}'
-                    outline += f'\t{lig_id}\t{iptm}\t{pair_iptm}\t{is_succ}\t{is_proper}\t{lig_rmsd_chain_mapping}'
+                    outline += f'\t{lig_id}\t{pb_valid}\t{iptm}\t{pair_iptm}\t{is_succ}\t{is_proper}\t{lig_rmsd_chain_mapping}'
                     outline += f'\t{lig_rmsd}\t{lddt_pli}\t{lddt_lp}\t{pocket_bb_rmsd}\t{rec_rmsd}\t{rec_lddt}\t{tm_score}\t{rec_ch_mapping}'
                     
                     if is_proper:
