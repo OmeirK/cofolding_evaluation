@@ -1,0 +1,187 @@
+{
+    "model_ligands": [
+        "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/examples/boltz-2_results_reformatted/A71EV2A-x4390a/seed_1880307061/A71EV2A-x4390a_seed_1880307061_sample_3_model_ZN-1-E-lig.sdf"
+    ],
+    "reference_ligands": [
+        "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/fl_tmp.sdf:0",
+        "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/fl_tmp.sdf:1"
+    ],
+    "lddt_pli": {
+        "assigned_scores": [
+            {
+                "score": 0.9950000047683716,
+                "coverage": 1.0,
+                "lddt_pli_n_contacts": 50,
+                "model_ligand": "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/examples/boltz-2_results_reformatted/A71EV2A-x4390a/seed_1880307061/A71EV2A-x4390a_seed_1880307061_sample_3_model_ZN-1-E-lig.sdf",
+                "reference_ligand": "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/fl_tmp.sdf:1"
+            }
+        ],
+        "model_ligand_unassigned_reason": {},
+        "reference_ligand_unassigned_reason": {
+            "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/fl_tmp.sdf:0": [
+                "stoichiometry",
+                "Ligand was already assigned to an other model ligand (different stoichiometry)"
+            ]
+        }
+    },
+    "rmsd": {
+        "assigned_scores": [
+            {
+                "score": 0.1236300989985466,
+                "coverage": 1.0,
+                "lddt_lp": 1.0,
+                "bb_rmsd": 0.10151688009500504,
+                "model_ligand": "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/examples/boltz-2_results_reformatted/A71EV2A-x4390a/seed_1880307061/A71EV2A-x4390a_seed_1880307061_sample_3_model_ZN-1-E-lig.sdf",
+                "reference_ligand": "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/fl_tmp.sdf:1",
+                "chain_mapping": {
+                    "A": "A"
+                },
+                "bs_ref_res": [
+                    "A.56.",
+                    "A.58.",
+                    "A.116.",
+                    "A.118."
+                ],
+                "bs_ref_res_mapped": [
+                    "A.56.",
+                    "A.58.",
+                    "A.116.",
+                    "A.118."
+                ],
+                "bs_mdl_res_mapped": [
+                    "A.56.",
+                    "A.58.",
+                    "A.116.",
+                    "A.118."
+                ],
+                "inconsistent_residues": [],
+                "transform": [
+                    [
+                        0.6757792830467224,
+                        0.4745698869228363,
+                        -0.564008891582489,
+                        18.707256317138672
+                    ],
+                    [
+                        -0.007745227310806513,
+                        -0.7605544924736023,
+                        -0.6492279767990112,
+                        -7.9578070640563965
+                    ],
+                    [
+                        -0.7370636463165283,
+                        0.44310325384140015,
+                        -0.5102912187576294,
+                        13.25147819519043
+                    ],
+                    [
+                        0.0,
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                ]
+            }
+        ],
+        "model_ligand_unassigned_reason": {},
+        "reference_ligand_unassigned_reason": {
+            "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/fl_tmp.sdf:0": [
+                "stoichiometry",
+                "Ligand was already assigned to an other model ligand (different stoichiometry)"
+            ]
+        }
+    },
+    "chem_groups": [
+        [
+            "A",
+            "C"
+        ]
+    ],
+    "chem_mapping": [
+        [
+            "A",
+            "B"
+        ]
+    ],
+    "mdl_chains_without_chem_mapping": [],
+    "model_cleanup_log": {
+        "cleaned_residues": {
+            "no_clib": [],
+            "not_linking": []
+        },
+        "cleaned_atoms": {
+            "unknown_atoms": []
+        }
+    },
+    "reference_cleanup_log": {
+        "cleaned_residues": {
+            "no_clib": [
+                "A.201."
+            ],
+            "not_linking": [
+                "B.1.",
+                "E.1.",
+                "F.1.",
+                "H.9.",
+                "H.59.",
+                "H.73.",
+                "H.77.",
+                "H.85.",
+                "H.94.",
+                "H.106.",
+                "H.133.",
+                "H.145.",
+                "H.149.",
+                "H.154.",
+                "H.171.",
+                "H.272.",
+                "H.304."
+            ]
+        },
+        "cleaned_atoms": {
+            "unknown_atoms": []
+        }
+    },
+    "arguments": {
+        "model": "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/examples/boltz-2_results_reformatted/A71EV2A-x4390a/seed_1880307061/A71EV2A-x4390a_seed_1880307061_sample_3_model_rec.pdb",
+        "model_ligands": [
+            "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/examples/boltz-2_results_reformatted/A71EV2A-x4390a/seed_1880307061/A71EV2A-x4390a_seed_1880307061_sample_3_model_ZN-1-E-lig.sdf"
+        ],
+        "reference": "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/examples/fragalysis_data/A71EV2A-x4390a/A71EV2A-x4390a.pdb",
+        "reference_ligands": [
+            "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/fl_tmp.sdf"
+        ],
+        "output": "/lus/lfs1aip2/scratch/s5h/omeir.s5h/projects/openbind/cofolding_evaluation/examples/boltz-2_ost-ligand_results/A71EV2A-x4390a/seed_1880307061/ost-A71EV2A-x4390a_seed_1880307061_sample_3_model_ZN-1-E-lig.json",
+        "model_format": null,
+        "reference_format": null,
+        "output_format": "json",
+        "output_by_model_ligand": false,
+        "csv_extra_header": null,
+        "csv_extra_data": null,
+        "model_biounit": null,
+        "reference_biounit": null,
+        "fault_tolerant": false,
+        "residue_number_alignment": false,
+        "substructure_match": false,
+        "coverage_delta": 0.2,
+        "verbosity": 0,
+        "full_results": false,
+        "lddt_pli": true,
+        "lddt_pli_radius": 6.0,
+        "lddt_pli_add_mdl_contacts": true,
+        "rmsd": true,
+        "radius": 4.0,
+        "lddt_lp_radius": 15.0,
+        "full_bs_search": false,
+        "max_symmetries": 10000.0,
+        "min_pep_length": 6,
+        "min_nuc_length": 4,
+        "chem_group_seqid_thresh": 95.0,
+        "chem_map_seqid_thresh": 70.0,
+        "seqres": null,
+        "trg_seqres_mapping": null
+    },
+    "log": [],
+    "ost_version": "2.11.1",
+    "status": "SUCCESS"
+}

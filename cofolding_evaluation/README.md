@@ -1,1 +1,26 @@
 Code to postprocess and run ost on cofolded models
+
+To preprocess the output, convert cofolding predictions to the openfold 3 format:
+```
+python3 Py_convert_boltz_to_of3_fmt.py -bd=examples/boltz-2_results/ -od=examples/boltz-2_results_reformatted
+```
+
+Next, extract sdf and pdb files for the ligands and receptors:
+```
+python3 util01_Py_extract_of3_ligand_sdfs.py -r=examples/boltz-2_results_reformatted/ -fd=examples/fragalysis_data/
+```
+
+Run the ost-ligand comparison script:
+```
+python3 util02_Py_score_of3_with_ost_v2.py -r=examples/boltz-2_results_reformatted/ -f=examples/fragalysis_data/ -o=examples/boltz-2_ost-ligand_results -m=boltz
+```
+
+Run the ost-recepotr comparison script:
+```
+python3 util03_Py_get_receptor_ost_metrics.py -r=examples/boltz-2_results_reformatted/ -f=examples/fragalysis_data/ -o=examples/
+```
+
+Compile OST metrics
+```
+python3 Py_compile_performance_metrics.py -r=examples/boltz-2_results_reformatted/ -ol=examples/boltz-2_ost-ligand_results/ -or=examples/boltz-2_ost-receptor_results/ -st=examples/tsv_similarity_data_2023-06-01.tsv -m=boltz-2 -o=examples/metrics_boltz2_ost.tsv
+```
