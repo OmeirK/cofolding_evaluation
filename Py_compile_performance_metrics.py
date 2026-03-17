@@ -17,6 +17,8 @@ parser.add_argument('--outfile', '-o', help='Name of the output .tsv file', requ
 
 args = parser.parse_args()
 
+ALPHABET=list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+
 def parse_rec_ost(ost_f):
     with open(ost_f) as f:
         ost_data = json.load(f)
@@ -46,6 +48,7 @@ def parse_confidence_metrics(conf_data, method, lig_ch, lig_rmsd_chain_mapping):
     iptm = conf_data['iptm']
     pair_iptm = None # Ignore this for now
     
+    # Convert chain mapping string to list
     try:
         rec_lig_ch_l = []
         for ch_pair in lig_rmsd_chain_mapping.split(','):
@@ -55,8 +58,8 @@ def parse_confidence_metrics(conf_data, method, lig_ch, lig_rmsd_chain_mapping):
         pair_iptm = None
         return iptm, pair_iptm
 
+
     if method == 'of3p':
-        iptm = conf_data['iptm']
         pair_iptm_l = []
         for ch in rec_lig_ch_l:
             ch_pair = f'({ch}, {lig_ch})'
@@ -65,13 +68,37 @@ def parse_confidence_metrics(conf_data, method, lig_ch, lig_rmsd_chain_mapping):
         pair_iptm = np.average(pair_iptm_l)
         #print('\tiptm:', iptm, 'pair_iptm:', pair_iptm)
 
+    if method == 'protenix':
+        lig_ch_idx = ALPHABET.index(lig_ch)
+        pair_iptm_l = []
+        for ch in rec_lig_ch_l:
+            ch_idx = ALPHABET.index(ch)
+            pair_val = conf_data["chain_pair_iptm"][lig_ch_idx][ch_idx]
+            pair_iptm_l.append(pair_val)
+            #print(f'\t{lig_ch}:{lig_ch_idx}\t{ch}:{ch_idx}\t{pair_val}')
+
+        pair_iptm = np.average(pair_iptm_l)
+        #print(f'\t{lig_ch}:{lig_ch_idx}\t{pair_iptm}')
+
     if method == 'rf3':
-        iptm = conf_data['iptm']
-        pair_iptm = None
+        pair_iptm = iptm # RF3 does not report a pair iptm :(
         
     if method in ['boltz-1', 'boltz-2']:
-        iptm = conf_data['iptm']
-        pair_iptm = None # Return to this later
+        lig_ch_idx = str(ALPHABET.index(lig_ch))
+        pair_iptm_l = []
+        for ch in rec_lig_ch_l:
+            ch_idx = str(ALPHABET.index(ch))
+
+            # iptm scores are not symmetric in Boltz :(
+            # Get the max value for a pair, and use that
+            val1 = conf_data["pair_chains_iptm"][lig_ch_idx][ch_idx]
+            val2 = conf_data["pair_chains_iptm"][ch_idx][lig_ch_idx]
+            
+            pair_val = max([val1, val2])
+            pair_iptm_l.append(pair_val)
+
+        pair_iptm = np.average(pair_iptm_l)
+        
 
     #print('\tiptm:', iptm, 'pair_iptm:', pair_iptm)
     return iptm, pair_iptm
@@ -122,7 +149,7 @@ def main():
     case_data = {}
     #outlines = ['target\tseed\tsample\tmethod\tlig_id\tlig_ref_ch\tlig_mdl_ch\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\t']
     #sucos_shape pocket_qcov sucos_shape_pocket_qcov
-    outlines = ['target\tseed\tsample\tmethod\tlig_id\tiptm\tis_succ\tis_proper\tlig_rmsd_ch_mapping\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\trec_rmsd\trec_lddt\ttm_score\trec_ch_mapping\tsucos_shape\tpocket_qcov\tsucos_shape_pocket_qcov']
+    outlines = ['target\tseed\tsample\tmethod\tlig_id\tiptm\tpair_iptm\tis_succ\tis_proper\tlig_rmsd_ch_mapping\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\trec_rmsd\trec_lddt\ttm_score\trec_ch_mapping\tsucos_shape\tpocket_qcov\tsucos_shape_pocket_qcov']
     err_log = []
     # Parse all cases
     for case in tqdm.tqdm(os.listdir(args.ost_receptor)):
@@ -184,18 +211,12 @@ def main():
                     
                     
                     # Extract confidence metrics
-                    #try:
                     lig_chain = lig_id.split('-')[2]
-                    #print(case, seed, sample, lig_id)
                     iptm, pair_iptm = parse_confidence_metrics(conf_dict[sample], args.method, lig_chain, lig_rmsd_chain_mapping)
-                    #except:
-                    #    iptm = None
-                    #    pair_iptm = None
-
 
                     # Save output data
                     outline = f'{case}\t{seed}\t{sample}\t{args.method}'
-                    outline += f'\t{lig_id}\t{iptm}\t{is_succ}\t{is_proper}\t{lig_rmsd_chain_mapping}'
+                    outline += f'\t{lig_id}\t{iptm}\t{pair_iptm}\t{is_succ}\t{is_proper}\t{lig_rmsd_chain_mapping}'
                     outline += f'\t{lig_rmsd}\t{lddt_pli}\t{lddt_lp}\t{pocket_bb_rmsd}\t{rec_rmsd}\t{rec_lddt}\t{tm_score}\t{rec_ch_mapping}'
                     
                     if is_proper:

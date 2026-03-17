@@ -1,4 +1,6 @@
-Code to postprocess and run ost on cofolded models
+# Cofolding Evaluation Code
+
+## Code to postprocess and run ost on cofolded models
 
 To preprocess the output, convert cofolding predictions to the openfold 3 format:
 ```
@@ -9,6 +11,7 @@ Next, extract sdf and pdb files for the ligands and receptors:
 ```
 python3 util01_Py_extract_of3_ligand_sdfs.py -r=examples/boltz-2_results_reformatted/ -fd=examples/fragalysis_data/
 ```
+## Code for running OST evaluations
 
 Run the ost-ligand comparison script:
 ```
@@ -20,7 +23,13 @@ Run the ost-recepotr comparison script:
 python3 util03_Py_get_receptor_ost_metrics.py -r=examples/boltz-2_results_reformatted/ -f=examples/fragalysis_data/ -o=examples/
 ```
 
+## Code for compiling OST metrics into a tsv file
+
 Compile OST metrics
 ```
 python3 Py_compile_performance_metrics.py -r=examples/boltz-2_results_reformatted/ -ol=examples/boltz-2_ost-ligand_results/ -or=examples/boltz-2_ost-receptor_results/ -st=examples/tsv_similarity_data_2023-06-01.tsv -m=boltz-2 -o=examples/metrics_boltz2_ost.tsv
 ```
+
+If OST failed to score ligands, or there are any other issues, they will be stored in the in a error file that shares the name of the metrics csv. (i.e. `examples/metrics_boltz2_ost.tsv` has error file `examples/metrics_boltz2_ost.err`)
+
+Code for calculating SuCOS-Pocket similarity is available in [this repository](https://github.com/OmeirK/pocket_sucos_code/tree/main)
