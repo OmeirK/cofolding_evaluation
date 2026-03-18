@@ -36,8 +36,12 @@ def main():
             continue
 
         for seed in os.listdir(f'{args.result_dir}/{case}/'):
-            print(case, seed)
             out_json = f'{args.result_dir}/{case}/{seed}/posebusters_data.json'
+            
+            if os.path.exists(out_json):
+                continue
+
+            print(case, seed)
             pb_data = {}
             # A71EV2A-x7597a_seed_2012026466_sample_1_model.cif
             for model in glob.glob(f'{args.result_dir}/{case}/{seed}/*_model.cif'):
