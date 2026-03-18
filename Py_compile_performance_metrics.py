@@ -6,7 +6,6 @@ import argparse
 import numpy as np
 import pandas as pd
 from rdkit import Chem
-from posebusters import PoseBusters
 
 parser = argparse.ArgumentParser()
 
@@ -134,17 +133,6 @@ def parse_lig_ost(ost_f):
 
     return lig_rmsd, lddt_pli, lddt_lp, pocket_bb_rmsd, chain_map_str
 
-def check_posebusters(mdl_lig, mdl_rec):
-    buster = PoseBusters(config="dock")
-    df = buster.bust([mdl_lig], None, mdl_rec)
-
-    pb_valid = True
-    for h in df.head():
-        if df[h].iloc[0] == False:
-            pb_valid = False
-
-    return pb_valid
-
 def read_training_similarity(sim_tsv):
     df = pd.read_csv(sim_tsv, delimiter='\t')
     sim_data = {}
@@ -215,7 +203,6 @@ def main():
                     lig_id = os.path.basename(l_ost).split('_')[-1][:-5]
                     
                     #mdl_rec = f'{args.result_dir}/{case}/{seed}/{case}_{seed}_sample_{sample}_model_rec.pdb'
-                    #pb_valid = check_posebusters(mdl_lig, mdl_rec)
                     mdl_lig_name = f'{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
                     mdl_lig = f'{args.result_dir}/{case}/{seed}/{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
                     pb_valid = pb_data[mdl_lig_name]
