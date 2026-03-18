@@ -51,7 +51,7 @@ def check_lig_match_resn(gt_ligs, gt_lines, of3_lig):
         gt_lig_resn = gt_sdf.split('_')[-1].split('-')[0]
         
         # Custom ligand matching (assumes only one ligand of interest!!)
-        if (args.cofolding_model == 'of3') or (args.cofolding_model == 'boltz'):
+        if (args.cofolding_model == 'of3') or (args.cofolding_model == 'boltz') or (args.cofolding_model == 'af3'):
             if of3_lig_resn.startswith('LIG') and gt_lig_resn == 'LIG':
                 match_ligs.append(gt_sdf)
                 tmp_lines += gt_lines[gt_sdf]

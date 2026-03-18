@@ -57,7 +57,9 @@ def main():
 
 
         for seed_sample in seed_sample_list:
-            seed, sample_n = seed_sample.split('_')
+            seed_n, sample_n = seed_sample.split('_')
+
+            seed = '_'.join(seed_n.split('-'))
             print(case, seed)
             case_outdir = f'{args.out_dir}/{case}/{seed}/'
             os.makedirs(case_outdir, exist_ok=True)

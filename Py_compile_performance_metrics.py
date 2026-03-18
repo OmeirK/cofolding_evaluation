@@ -5,6 +5,7 @@ import json
 import argparse
 import numpy as np
 import pandas as pd
+from rdkit import Chem
 from posebusters import PoseBusters
 
 parser = argparse.ArgumentParser()
@@ -162,7 +163,7 @@ def main():
     case_data = {}
     #outlines = ['target\tseed\tsample\tmethod\tlig_id\tlig_ref_ch\tlig_mdl_ch\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\t']
     #sucos_shape pocket_qcov sucos_shape_pocket_qcov
-    outlines = ['target\tseed\tsample\tmethod\tlig_id\tpb_valid\tiptm\tpair_iptm\tis_succ\tis_proper\tlig_rmsd_ch_mapping\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\trec_rmsd\trec_lddt\ttm_score\trec_ch_mapping\tsucos_shape\tpocket_qcov\tsucos_shape_pocket_qcov']
+    outlines = ['target\tseed\tsample\tmethod\tlig_id\tpb_valid\tiptm\tpair_iptm\tis_succ\tis_proper\tlig_rmsd_ch_mapping\tlig_rmsd\tlddt_pli\tlddt_lp\tbb_rmsd_lp\trec_rmsd\trec_lddt\ttm_score\trec_ch_mapping\tsucos_shape\tpocket_qcov\tsucos_shape_pocket_qcov\tligand_smiles']
     err_log = []
     # Parse all cases
     for case in tqdm.tqdm(os.listdir(args.ost_receptor)):
@@ -213,11 +214,13 @@ def main():
                     is_proper = False
                     lig_id = os.path.basename(l_ost).split('_')[-1][:-5]
                     
-                    #mdl_lig = f'{args.result_dir}/{case}/{seed}/{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
                     #mdl_rec = f'{args.result_dir}/{case}/{seed}/{case}_{seed}_sample_{sample}_model_rec.pdb'
                     #pb_valid = check_posebusters(mdl_lig, mdl_rec)
                     mdl_lig_name = f'{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
+                    mdl_lig = f'{args.result_dir}/{case}/{seed}/{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
                     pb_valid = pb_data[mdl_lig_name]
+                    lig_mol = Chem.MolFromMolFile(mdl_lig)
+                    lig_smi = Chem.MolToSmiles(lig_mol)
                     
 
                     # Weird janky way to check if the ligand of interest is in this file, but
@@ -229,7 +232,7 @@ def main():
                     lig_rmsd, lddt_pli, lddt_lp, pocket_bb_rmsd, lig_rmsd_chain_mapping = parse_lig_ost(l_ost)
                     
                     if lig_rmsd != None:
-                        if (lig_rmsd =< 2.0) and (lddt_pli >= 0.8):
+                        if (lig_rmsd <= 2.0) and (lddt_pli >= 0.8):
                             is_succ = True
                     else:
                         err_log.append(f'ERR_OST-LIGAND: ost metric failure for {case} {seed} {sample} {lig_id}')
@@ -245,9 +248,9 @@ def main():
                     outline += f'\t{lig_rmsd}\t{lddt_pli}\t{lddt_lp}\t{pocket_bb_rmsd}\t{rec_rmsd}\t{rec_lddt}\t{tm_score}\t{rec_ch_mapping}'
                     
                     if is_proper:
-                        outline += f'\t{sim_data[case]["sucos_shape"]}\t{sim_data[case]["pocket_qcov"]}\t{sim_data[case]["sucos_shape_pocket_qcov"]}'
+                        outline += f'\t{sim_data[case]["sucos_shape"]}\t{sim_data[case]["pocket_qcov"]}\t{sim_data[case]["sucos_shape_pocket_qcov"]}\t{lig_smi}'
                     else:
-                        outline += f'\t{None}\t{None}\t{None}'
+                        outline += f'\t{None}\t{None}\t{None}\t{lig_smi}'
 
                     #print('\t\t\t', lig_id, lig_rmsd, lddt_pli, lig_rmsd_chain_mapping, is_succ, is_proper)
                     outlines.append(outline)

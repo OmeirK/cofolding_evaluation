@@ -37,7 +37,8 @@ def main():
                 cmd.load(m)
 
                 stored.lig_data = []
-                cmd.iterate('hetatm', 'stored.lig_data.append("_".join([resn, resi, chain]))')
+                #cmd.iterate('hetatm', 'stored.lig_data.append("_".join([resn, resi, chain]))')
+                cmd.iterate('hetatm', 'stored.lig_data.append("_".join([resn.split("_")[0], resi, chain]))') # Edit to fix AF3 error
                 
                 lig_data = list(set(stored.lig_data))
                 
