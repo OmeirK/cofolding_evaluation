@@ -70,7 +70,7 @@ def parse_confidence_metrics(conf_data, method, lig_ch, lig_rmsd_chain_mapping):
         pair_iptm = np.average(pair_iptm_l)
         #print('\tiptm:', iptm, 'pair_iptm:', pair_iptm)
 
-    if method == 'protenix':
+    if method in ['protenix', 'af3']:
         lig_ch_idx = ALPHABET.index(lig_ch)
         pair_iptm_l = []
         for ch in rec_lig_ch_l:
