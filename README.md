@@ -53,4 +53,11 @@ python3 Py_compile_performance_metrics.py -r=examples/boltz-2_results_reformatte
 
 If OST failed to score ligands, or there are any other issues, they will be stored in the in a error file that shares the name of the metrics csv. (i.e. `examples/metrics_boltz2_ost.tsv` has error file `examples/metrics_boltz2_ost.err`)
 
+Calculate the `pocket_recall` metrics and append failure modes to the tsv file:
+```
+python3 util04_Py_get_pocket_recall.py -t=examples/metrics_boltz2_ost.tsv -r=examples/boltz-2_results_reformatted/ -f=examples/fragalysis_data/
+```
+If no output file is specified, the appended .tsv is stored in the same location as the input with a modified name: `examples/metrics_boltz2_ost_failure_modes.tsv`
+
+
 Code for calculating SuCOS-Pocket similarity is available in [this repository](https://github.com/OmeirK/pocket_sucos_code/tree/main)
