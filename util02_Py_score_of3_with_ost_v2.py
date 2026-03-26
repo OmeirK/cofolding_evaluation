@@ -136,6 +136,11 @@ def main():
                 #print(m_name, lig_sdfs)
 
                 for ml in lig_sdfs:
+                    ml_name = os.path.basename(ml).strip('.sdf')
+                    outfile = os.path.abspath(f'{case_outdir}/ost-{ml_name}.json')
+                    if os.path.exists(outfile):
+                        continue
+
                     matching_fragalysis, tmp_lines, fail_log = check_lig_match_resn(fragalysis_ligs, fragalysis_lines, ml)
 
                     if len(tmp_lines) == 0:
@@ -146,12 +151,6 @@ def main():
                     with open('fl_tmp.sdf', 'w') as f:
                         f.write(''.join(tmp_lines))
 
-                    ml_name = os.path.basename(ml).strip('.sdf')
-
-                    outfile = os.path.abspath(f'{case_outdir}/ost-{ml_name}.json')
-                    if os.path.exists(outfile):
-                        continue
-                    
                     ost_cmd = f'ost compare-ligand-structures -m {os.path.abspath(m)} -ml {os.path.abspath(ml)} -r {os.path.abspath(fragalysis_rec)} -rl {os.path.abspath("fl_tmp.sdf")} --lddt-pli --rmsd -o {outfile} -v 0'.split()
                     subprocess.run(ost_cmd)
                     os.remove('fl_tmp.sdf')
