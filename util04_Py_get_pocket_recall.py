@@ -1,4 +1,5 @@
 import os
+import tqdm
 import argparse
 import pandas as pd
 from scipy.spatial import cKDTree
@@ -107,12 +108,13 @@ def main():
 
     case_list = os.listdir(f'{args.fragalysis_dir}/')
 
-    for i, target in enumerate(metric_df['target']):
+    for i, target in enumerate(tqdm.tqdm(metric_df['target'])):
         seed = metric_df['seed'].iloc[i]
         sample = metric_df['sample'].iloc[i]
         lig_id = metric_df['lig_id'].iloc[i]
         is_proper = metric_df['is_proper'].iloc[i]
-
+        
+        #Append empty lines if it is not a main ligand
         if not is_proper:
             outstr = ''
             for h in df_head:
@@ -123,12 +125,22 @@ def main():
             continue
         
         ch_map_str = metric_df['lig_rmsd_ch_mapping'].iloc[i]
-        ch_map = ch_map_as_dict(ch_map_str)
+
+        try:
+            ch_map = ch_map_as_dict(ch_map_str)
+        except:
+            outstr = ''
+            for h in df_head:
+                outstr += f'{metric_df[h].iloc[i]}\t'
+
+            outstr = outstr[:-1] + f'\t{None}\t{None}\t{None}\t{None}'
+            outlines.append(outstr)
+            continue
         
         result_path = f'{args.result_dir}/{target}/{seed}'
-        print(i, target, seed, sample, lig_id, is_proper)
-        print(ch_map)
-        print(result_path)
+        #print(i, target, seed, sample, lig_id, is_proper)
+        #print(ch_map)
+        #print(result_path)
 
         mdl_rec = f'{result_path}/{target}_{seed}_sample_{sample}_model_rec.pdb'
         mdl_lig = f'{result_path}/{target}_{seed}_sample_{sample}_model_{lig_id}.sdf'
@@ -143,8 +155,8 @@ def main():
 
         conf_fail, pocket_fail, pose_fail = get_failure_mode(metric_df['lig_rmsd'].iloc[i], metric_df['lddt_pli'].iloc[i], metric_df['lddt_lp'].iloc[i], pocket_recall)
 
-        print('\t', pocket_recall, metric_df['lig_rmsd'].iloc[i], metric_df['lddt_pli'].iloc[i], metric_df['lddt_lp'].iloc[i])
-        print('\t', pocket_fail, pose_fail,'\t', conf_fail)
+        #print('\t', pocket_recall, metric_df['lig_rmsd'].iloc[i], metric_df['lddt_pli'].iloc[i], metric_df['lddt_lp'].iloc[i])
+        #print('\t', pocket_fail, pose_fail,'\t', conf_fail)
 
         #Add metrics to the output
         outstr = ''
