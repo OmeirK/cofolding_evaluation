@@ -14,7 +14,7 @@ parser.add_argument('--ost_ligand', '-ol', help='Directory with ost ligand resul
 parser.add_argument('--ost_receptor', '-or', help='Directory with ost receptor results', required=True)
 #parser.add_argument('--fragalysis_dir', '-f', help='Path to aligned/ fragalysis folder', required=True)
 parser.add_argument('--similarity_tsv', '-st', help='.tsv file with sucos_pocket_qcov similarity data', required=True)
-parser.add_argument('--method', '-m', choices=['of3p', 'rf3', 'protenix', 'boltz-1', 'boltz-2', 'af3'], help='Name of the method that was benchmarked', required=True)
+parser.add_argument('--method', '-m', choices=['of3p', 'of3p2', 'rf3', 'protenix', 'boltz-1', 'boltz-2', 'af3'], help='Name of the method that was benchmarked', required=True)
 parser.add_argument('--outfile', '-o', help='Name of the output .tsv file', required=True)
 
 args = parser.parse_args()
@@ -61,7 +61,7 @@ def parse_confidence_metrics(conf_data, method, lig_ch, lig_rmsd_chain_mapping):
         return iptm, pair_iptm
 
 
-    if method == 'of3p':
+    if method in ['of3p', 'of3p2']:
         pair_iptm_l = []
         for ch in rec_lig_ch_l:
             ch_pair = f'({ch}, {lig_ch})'
