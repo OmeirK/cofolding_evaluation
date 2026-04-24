@@ -80,11 +80,13 @@ def main():
                 
                         cmd.save(f'{result_dir}/tmp_lig.pdb', f'chain {lc}')
                         docked_pdb = Chem.MolFromPDBFile(f'{result_dir}/tmp_lig.pdb')
+
+                        new_mol = None
                         try:
                             new_mol = AllChem.AssignBondOrdersFromTemplate(template, docked_pdb)
                         except:
                             print(f'\tERR_AssignBondOrders failed: {lig_sdf}')
-                            new_mol == None
+                            new_mol = None
 
                         os.remove(f'{result_dir}/tmp_lig.pdb')
                         
@@ -96,7 +98,12 @@ def main():
                             # Try RDKit kekulize as a last resort 
                             Chem.Kekulize(mol, clearAromaticFlags=True)
                             print('\tKekulize:', lig_sdf, mol) #Debug
-                            Chem.MolToMolFile(mol, lig_sdf)
+
+                            if mol is not None:
+                                Chem.MolToMolFile(mol, lig_sdf)
+                            else:
+                                print('\tAll kekulization attempts failed, use PyMOL sdf')
+                                cmd.save(lig_sdf, f'chain {lc}') # Just use the original pymol model if all else fails
 
 
                 rec_pdb = f'{result_dir}/{m_name}_rec.pdb'

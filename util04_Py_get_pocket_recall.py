@@ -55,6 +55,9 @@ def get_pocket(rec_pdb, lig_sdf, ch_map, ref=True, cutoff=6.0):
         for i in range(len(pocket_atoms)):
             rid, rname = pocket_atoms.res_id[i], pocket_atoms.res_name[i]
 
+            if rname == 'LIG':
+                continue
+
             r_code = f'{ref_ch}.{rid}.{rname}' # Always use the reference chain name
             if r_code not in seen:
                 seen.add(r_code)
@@ -145,11 +148,15 @@ def main():
         mdl_rec = f'{result_path}/{target}_{seed}_sample_{sample}_model_rec.pdb'
         mdl_lig = f'{result_path}/{target}_{seed}_sample_{sample}_model_{lig_id}.sdf'
 
-        ref_rec = f'{args.fragalysis_dir}/{target}/{target}.pdb'
+        ref_rec = f'{args.fragalysis_dir}/{target}/{target}_apo-desolv.pdb'
         ref_lig = f'{args.fragalysis_dir}/{target}/{target}_ligand.sdf'
 
         ref_pocket = get_pocket(ref_rec, ref_lig, ch_map, ref=True, cutoff=6.0)
         mdl_pocket = get_pocket(mdl_rec, mdl_lig, ch_map, ref=False, cutoff=6.0)
+
+        print(target, seed, sample)
+        #print(f'ref: {ref_pocket}')
+        #print(f'mdl: {mdl_pocket}')
         
         pocket_recall = calc_pocket_recall(ref_pocket, mdl_pocket)
 
@@ -166,6 +173,7 @@ def main():
         outstr = outstr[:-1] + f'\t{pocket_recall}\t{conf_fail}\t{pocket_fail}\t{pose_fail}'
         outlines.append(outstr)
         #'\tpocket_recall\tconf_fail\tpocket_recall_fail\tpose_fail'
+
 
     with open(outfile, 'w') as fo:
         fo.write('\n'.join(outlines))
