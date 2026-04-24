@@ -216,7 +216,10 @@ def main():
                         is_proper = True
 
                     is_succ = False
-                    lig_rmsd, lddt_pli, lddt_lp, pocket_bb_rmsd, lig_rmsd_chain_mapping = parse_lig_ost(l_ost)
+                    try:
+                        lig_rmsd, lddt_pli, lddt_lp, pocket_bb_rmsd, lig_rmsd_chain_mapping = parse_lig_ost(l_ost)
+                    except:
+                        raise ValueError(f'OST Reading err for {l_ost}')
                     
                     if lig_rmsd != None:
                         if (lig_rmsd <= 2.0) and (lddt_pli >= 0.8):

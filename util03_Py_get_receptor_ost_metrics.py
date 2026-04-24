@@ -21,7 +21,8 @@ def main():
             print(ff)
     
     for case in case_l:
-        fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}_apo.pdb'
+        #fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}_apo.pdb' #Old fragalysis naming
+        fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}_delig.pdb'
 
         for seed in seeds:
             model_recs = glob.glob(f'{args.of3_results}/{case}/seed_{seed}/*_rec.pdb')
