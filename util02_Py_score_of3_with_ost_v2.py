@@ -12,6 +12,7 @@ parser.add_argument('--of3_results', '-r', help='Directory with cofolding result
 parser.add_argument('--fragalysis_dir', '-f', help='Path to aligned_files/ directory with fragalysis results')
 parser.add_argument('--outdir', '-o', help='Directory to store ost comparison results')
 parser.add_argument('--cofolding_model', '-m', help='Specify which cofolding model was used to predict structures. This parameter determines the ligand matching criteria', default='of3', choices=['of3', 'protenix', 'boltz', 'rf3', 'af3'])
+parser.add_argument('--target_merge', '-tm', help='Enable this flag to compare to alternate fragalysis conformations of the target (i.e. compare x0152a to x0152a, x0152b, x0152c, etc)', default=False, action='store_true')
 
 args = parser.parse_args()
 
@@ -110,9 +111,15 @@ def main():
         
         # Receptor file naming seems to be inconsistent between fragalysis systems :\
         fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}.pdb'
-        #ligand_sdfs/
-        lig_path = f'{args.fragalysis_dir}/{case}//ligand_sdfs/'
-        fragalysis_ligs = glob.glob(f'{lig_path}/*.sdf')
+
+        if args.target_merge:
+            case_prefix = case[:-1] # Remove suffix at the end
+            fragalysis_ligs = glob.glob(f'{args.fragalysis_dir}/{case_prefix}*/ligand_sdfs/*.sdf')
+        else:
+            lig_path = f'{args.fragalysis_dir}/{case}//ligand_sdfs/'
+            fragalysis_ligs = glob.glob(f'{lig_path}/*.sdf')
+        
+        #print(case)
         #print(fragalysis_ligs)
 
         fragalysis_lines = {}
@@ -142,6 +149,9 @@ def main():
                         continue
 
                     matching_fragalysis, tmp_lines, fail_log = check_lig_match_resn(fragalysis_ligs, fragalysis_lines, ml)
+
+                    #print(ml)
+                    #print('\t', matching_fragalysis)
 
                     if len(tmp_lines) == 0:
                         with open(f'{args.outdir}/ost_fails.log', 'a') as fo:
