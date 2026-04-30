@@ -24,7 +24,11 @@ def main():
 
 
     for case in case_l:
-            
+        
+        if os.path.exists(f'{args.fragalysis_dir}/{case}/') == False:
+            print(f'FRAGALYSIS_ERR: {case} not found in {args.fragalysis_dir}')
+            continue
+
         for s in seeds:
             result_dir = f'{args.of3_results}/{case}/seed_{s}/'
             print(case, os.path.exists(result_dir), result_dir)
@@ -95,12 +99,16 @@ def main():
                             print(f'\t\tSuccessfully fixed {lig_sdf}')
                             Chem.MolToMolFile(new_mol, lig_sdf)
                         else:
-                            # Try RDKit kekulize as a last resort 
-                            Chem.Kekulize(mol, clearAromaticFlags=True)
-                            print('\tKekulize:', lig_sdf, mol) #Debug
+                            try:
+                                # Try RDKit kekulize as a last resort 
+                                Chem.Kekulize(docked_pdb, clearAromaticFlags=True)
+                                print('\tKekulize:', lig_sdf, mol) #Debug
+                            except:
+                                print('\tAll kekulization attempts failed, use PyMOL sdf')
+                                cmd.save(lig_sdf, f'chain {lc}') # Just use the original pymol model if all else fails
 
-                            if mol is not None:
-                                Chem.MolToMolFile(mol, lig_sdf)
+                            if docked_pdb is not None:
+                                Chem.MolToMolFile(docked_pdb, lig_sdf)
                             else:
                                 print('\tAll kekulization attempts failed, use PyMOL sdf')
                                 cmd.save(lig_sdf, f'chain {lc}') # Just use the original pymol model if all else fails

@@ -12,7 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--result_dir', '-r', help='Directory with cofolding results, in OF3 format', required=True)
 parser.add_argument('--ost_ligand', '-ol', help='Directory with ost ligand results', required=True)
 parser.add_argument('--ost_receptor', '-or', help='Directory with ost receptor results', required=True)
-#parser.add_argument('--fragalysis_dir', '-f', help='Path to aligned/ fragalysis folder', required=True)
+parser.add_argument('--fragalysis_dir', '-f', help='Path to aligned_files/ fragalysis folder', required=True)
 parser.add_argument('--similarity_tsv', '-st', help='.tsv file with sucos_pocket_qcov similarity data', required=True)
 parser.add_argument('--method', '-m', choices=['of3p', 'of3p2', 'rf3', 'protenix', 'boltz-1', 'boltz-2', 'af3'], help='Name of the method that was benchmarked', required=True)
 parser.add_argument('--outfile', '-o', help='Name of the output .tsv file', required=True)
@@ -155,6 +155,10 @@ def main():
     err_log = []
     # Parse all cases
     for case in tqdm.tqdm(os.listdir(args.ost_receptor)):
+        # Check if the target is in fragalysis
+        if os.path.exists(f'{args.fragalysis_dir}/{case}/') == False:
+            err_log.append(f'ERR_FRAGALYSIS: {case} not found in {args.fragalysis_dir}')
+            continue
         #print(case)
         if case not in case_data:
             case_data[case] = {}
@@ -206,14 +210,19 @@ def main():
                     mdl_lig_name = f'{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
                     mdl_lig = f'{args.result_dir}/{case}/{seed}/{case}_{seed}_sample_{sample}_model_{lig_id}.sdf'
                     pb_valid = pb_data[mdl_lig_name]
-                    lig_mol = Chem.MolFromMolFile(mdl_lig)
-                    lig_smi = Chem.MolToSmiles(lig_mol)
                     
 
                     # Weird janky way to check if the ligand of interest is in this file, but
                     # it should work
                     if (lig_id.startswith('LIG')) or (lig_id.startswith('l0')) or (lig_id.startswith('L:')):
                         is_proper = True
+                    
+                    if is_proper:
+                        lig_mol = Chem.MolFromMolFile(f'{args.fragalysis_dir}/{case}/{case}_ligand.sdf')
+                        lig_smi = Chem.MolToSmiles(lig_mol)
+                    else:   
+                        lig_mol = Chem.MolFromMolFile(mdl_lig)
+                        lig_smi = Chem.MolToSmiles(lig_mol)
 
                     is_succ = False
                     try:

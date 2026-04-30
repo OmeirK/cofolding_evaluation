@@ -70,7 +70,7 @@ def check_lig_match_resn(gt_ligs, gt_lines, of3_lig):
 
 
     if len(tmp_lines) == 0:
-        fail_log.append(f'{of3_lig} failed!\n\tLig_SMI: {of_smi}\n\tGT_SMI_L: {" ".join(gt_smis)}\n')
+        fail_log.append(f'{of3_lig} failed!\n\tLig_RESN: {of3_lig_resn}\n\tGT_LIG_RESN: {" ".join(gt_lines)}\n')
         
     return match_ligs, tmp_lines, fail_log
 

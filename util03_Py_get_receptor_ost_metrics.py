@@ -20,7 +20,7 @@ def main():
             case_l.append(ff)
             print(ff)
     
-    for case in case_l:
+    for case in tqdm.tqdm(case_l):
         #fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}_apo.pdb' #Old fragalysis naming
         fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}_delig.pdb'
 
@@ -31,7 +31,7 @@ def main():
             os.makedirs(outdir, exist_ok=True)
             for mr in model_recs:
                 mr_name = os.path.basename(mr)[:-8]
-                print(mr_name)
+                #print(mr_name)
                 outfile = f'{outdir}/ost-{mr_name}.json'
 
                 if os.path.exists(outfile):

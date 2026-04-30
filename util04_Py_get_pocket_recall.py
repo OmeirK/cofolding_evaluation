@@ -83,7 +83,8 @@ def get_failure_mode(rmsd, lddt_pli, lddt_lp, pocket_recall):
 
     if lddt_lp < 0.8:
         conf_fail = True
-    if pocket_recall < 0.65:
+    #if pocket_recall < 0.65:
+    if pocket_recall < 0.50:
         pocket_recall_fail = True
     if (rmsd > 2.0) or (lddt_pli < 0.8):   
         pose_fail = True
@@ -148,7 +149,7 @@ def main():
         mdl_rec = f'{result_path}/{target}_{seed}_sample_{sample}_model_rec.pdb'
         mdl_lig = f'{result_path}/{target}_{seed}_sample_{sample}_model_{lig_id}.sdf'
 
-        ref_rec = f'{args.fragalysis_dir}/{target}/{target}_apo-desolv.pdb'
+        ref_rec = f'{args.fragalysis_dir}/{target}/{target}_delig-desolv.pdb'
         ref_lig = f'{args.fragalysis_dir}/{target}/{target}_ligand.sdf'
 
         ref_pocket = get_pocket(ref_rec, ref_lig, ch_map, ref=True, cutoff=6.0)
