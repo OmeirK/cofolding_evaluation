@@ -231,7 +231,7 @@ def main():
                         raise ValueError(f'OST Reading err for {l_ost}')
                     
                     if lig_rmsd != None:
-                        if (lig_rmsd <= 2.0) and (lddt_pli >= 0.8):
+                        if (lig_rmsd <= 2.0) and (lddt_pli >= 0.8) and (pb_valid):
                             is_succ = True
                     else:
                         err_log.append(f'ERR_OST-LIGAND: ost metric failure for {case} {seed} {sample} {lig_id}')
