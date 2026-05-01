@@ -3,6 +3,7 @@ import tqdm
 import glob
 import argparse
 import subprocess
+import multiprocessing as mp
 
 parser = argparse.ArgumentParser()
 
@@ -13,6 +14,10 @@ parser.add_argument('--target_merge', '-tm', help='Enable this flag to compare t
 
 args = parser.parse_args()
 
+def mp_func(cmd):
+    subprocess.run(cmd.split())
+    pass
+
 def main():
     seeds = [1370180479, 1449838082, 1832854922, 1880307061, 2012026466]
     case_l = []
@@ -20,8 +25,10 @@ def main():
         if os.path.isdir(os.path.join(args.fragalysis_dir,ff)):
             case_l.append(ff)
             #print(ff)
-    
-    for case in tqdm.tqdm(case_l):
+
+    # Prep commands to run
+    command_list = []
+    for case in case_l:
         #fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}_apo.pdb' #Old fragalysis naming
         #fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}_delig.pdb'
 
@@ -59,7 +66,16 @@ def main():
                         continue
 
                     ost_cmd = f'ost compare-structures -m {mr} -r {fragalysis_rec} -rna --tm-score --lddt --bb-lddt --rigid-scores --local-lddt --aa-local-lddt -o {outfile} -v 0'
-                    subprocess.run(ost_cmd.split())
+                    command_list.append(ost_cmd)
+                    #subprocess.run(ost_cmd.split())
+
+    with mp.Pool(mp.cpu_count()) as pool:
+        #pool.starmap(mp_func, command_list, chunksize=1)
+
+        #r = list(tqdm.tqdm(p.imap(_foo, range(30)), total=30))
+        #pool.map(mp_func, command_list, chunksize=1)
+
+        r = list(tqdm.tqdm(pool.imap(mp_func, command_list, chunksize=1)))
 
     #ost compare-structures -m test_results/A71EV2A-x6035a/seed_2012026466/A71EV2A-x6035a_seed_2012026466_sample_1_model_rec.pdb -r test_fragalysis/A71EV2A-x6035a/A71EV2A-x6035a_apo.pdb -rna --tm-score --lddt --bb-lddt --rigid-scores --local-lddt --aa-local-lddt -o test_rec_ost.json -v 1
 

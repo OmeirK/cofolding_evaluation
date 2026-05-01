@@ -4,6 +4,7 @@ import json
 import glob
 import argparse
 import subprocess
+import multiprocessing as mp
 from rdkit import Chem
 
 parser = argparse.ArgumentParser()
@@ -88,8 +89,66 @@ def check_lig_match_resn(gt_ligs, gt_lines, of3_lig):
         fo.write(''.join(tmplines))
     '''
 
-        
+def mp_func(case):
+    seeds = [1370180479, 1449838082, 1832854922, 1880307061, 2012026466]
+    # Receptor file naming seems to be inconsistent between fragalysis systems :\
+    fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}.pdb'
 
+    if args.target_merge:
+        case_prefix = case[:-1] # Remove suffix at the end
+        fragalysis_ligs = glob.glob(f'{args.fragalysis_dir}/{case_prefix}*/ligand_sdfs/*.sdf')
+    else:
+        lig_path = f'{args.fragalysis_dir}/{case}/ligand_sdfs/'
+        fragalysis_ligs = glob.glob(f'{lig_path}/*.sdf')
+    
+    #print(case)
+    #print(fragalysis_ligs)
+
+    fragalysis_lines = {}
+    for sdf in fragalysis_ligs:
+        with open(sdf) as f:
+            fragalysis_lines[sdf] = f.readlines()
+            
+
+    for s in seeds:
+        results_dir = f'{args.of3_results}/{case}/seed_{s}/'
+        model_pdbs = glob.glob(f'{results_dir}/*_model_rec.pdb')
+        case_outdir = f'{args.outdir}/{case}/seed_{s}'
+        os.makedirs(case_outdir, exist_ok=True)
+
+        for m in model_pdbs:
+            m_name = os.path.basename(m).strip('_rec.pdb')
+
+            lig_sdfs = glob.glob(f'{results_dir}/{m_name}*lig.sdf')
+            #continue #Debug
+
+            #print(m_name, lig_sdfs)
+
+            for ml in lig_sdfs:
+                ml_name = os.path.basename(ml).strip('.sdf')
+                outfile = os.path.abspath(f'{case_outdir}/ost-{ml_name}.json')
+                if os.path.exists(outfile):
+                    continue
+
+                matching_fragalysis, tmp_lines, fail_log = check_lig_match_resn(fragalysis_ligs, fragalysis_lines, ml)
+
+                #print(ml)
+                #print('\t', matching_fragalysis)
+
+                if len(tmp_lines) == 0:
+                    with open(f'{args.outdir}/ost_fails.log', 'a') as fo:
+                        fo.write(''.join(fail_log))
+                
+                # Save temporary file with all matching ground truth ligands
+                tmp_sdf = f'{case_outdir}/fl_tmp.sdf'
+                with open(tmp_sdf, 'w') as f:
+                    f.write(''.join(tmp_lines))
+
+                ost_cmd = f'ost compare-ligand-structures -m {os.path.abspath(m)} -ml {os.path.abspath(ml)} -r {os.path.abspath(fragalysis_rec)} -rl {os.path.abspath(tmp_sdf)} --lddt-pli --rmsd -o {outfile} -v 0'.split()
+                subprocess.run(ost_cmd)
+                os.remove(tmp_sdf)
+    
+        
 def main():
     os.makedirs(args.outdir, exist_ok=True)
         
@@ -97,73 +156,19 @@ def main():
     
     for ff in os.listdir(args.of3_results):
         if os.path.isdir(os.path.join(args.of3_results,ff)):
-            case_l.append(ff)
-            print(ff)
+            if os.path.exsts(fragalysis_rec = f'{args.fragalysis_dir}/{ff}/{ff}.pdb'):
+                case_l.append(ff)
+                print(ff)
 
     #with open(args.of3_json) as f:
     #    of3_inps = json.load(f)
 
-    seeds = [1370180479, 1449838082, 1832854922, 1880307061, 2012026466]
-
-    print(f'Calculating openstructure metrics on OF3 results...')
-    for case in tqdm.tqdm(case_l):
-        #print(case)
-        
-        # Receptor file naming seems to be inconsistent between fragalysis systems :\
-        fragalysis_rec = f'{args.fragalysis_dir}/{case}/{case}.pdb'
-
-        if args.target_merge:
-            case_prefix = case[:-1] # Remove suffix at the end
-            fragalysis_ligs = glob.glob(f'{args.fragalysis_dir}/{case_prefix}*/ligand_sdfs/*.sdf')
-        else:
-            lig_path = f'{args.fragalysis_dir}/{case}//ligand_sdfs/'
-            fragalysis_ligs = glob.glob(f'{lig_path}/*.sdf')
-        
-        #print(case)
-        #print(fragalysis_ligs)
-
-        fragalysis_lines = {}
-        for sdf in fragalysis_ligs:
-            with open(sdf) as f:
-                fragalysis_lines[sdf] = f.readlines()
-                
-
-        for s in seeds:
-            results_dir = f'{args.of3_results}/{case}/seed_{s}/'
-            model_pdbs = glob.glob(f'{results_dir}/*_model_rec.pdb')
-            case_outdir = f'{args.outdir}/{case}/seed_{s}'
-            os.makedirs(case_outdir, exist_ok=True)
-
-            for m in model_pdbs:
-                m_name = os.path.basename(m).strip('_rec.pdb')
-
-                lig_sdfs = glob.glob(f'{results_dir}/{m_name}*lig.sdf')
-                #continue #Debug
-
-                #print(m_name, lig_sdfs)
-
-                for ml in lig_sdfs:
-                    ml_name = os.path.basename(ml).strip('.sdf')
-                    outfile = os.path.abspath(f'{case_outdir}/ost-{ml_name}.json')
-                    if os.path.exists(outfile):
-                        continue
-
-                    matching_fragalysis, tmp_lines, fail_log = check_lig_match_resn(fragalysis_ligs, fragalysis_lines, ml)
-
-                    #print(ml)
-                    #print('\t', matching_fragalysis)
-
-                    if len(tmp_lines) == 0:
-                        with open(f'{args.outdir}/ost_fails.log', 'a') as fo:
-                            fo.write(''.join(fail_log))
-                    
-                    # Save temporary file with all matching ground truth ligands
-                    with open('fl_tmp.sdf', 'w') as f:
-                        f.write(''.join(tmp_lines))
-
-                    ost_cmd = f'ost compare-ligand-structures -m {os.path.abspath(m)} -ml {os.path.abspath(ml)} -r {os.path.abspath(fragalysis_rec)} -rl {os.path.abspath("fl_tmp.sdf")} --lddt-pli --rmsd -o {outfile} -v 0'.split()
-                    subprocess.run(ost_cmd)
-                    os.remove('fl_tmp.sdf')
+    print(f'OST-lig eval for {len(case_l)} targets...')
+    
+    # Quick multiprocessing implementation
+    with mp.Pool(mp.cpu_count()) as pool:
+        r = list(tqdm.tqdm(pool.imap(mp_func, case_l, chunksize=1)))
+    
 
 if __name__=='__main__':
     main()
