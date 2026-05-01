@@ -156,7 +156,7 @@ def main():
     
     for ff in os.listdir(args.of3_results):
         if os.path.isdir(os.path.join(args.of3_results,ff)):
-            if os.path.exsts(fragalysis_rec = f'{args.fragalysis_dir}/{ff}/{ff}.pdb'):
+            if os.path.exists(f'{args.fragalysis_dir}/{ff}/{ff}.pdb'):
                 case_l.append(ff)
                 print(ff)
 
