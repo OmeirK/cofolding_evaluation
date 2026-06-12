@@ -10,7 +10,7 @@ import biotite.structure.io.pdb as pdb
 parser = argparse.ArgumentParser(description='Calculate pocket recall from the fragalysis cofolding benchmark data. Then, assign failure modes to is_proper ligands and create an updated metrics_tsv. NOTE: This code assumes that residue numbering is the same between the model and ground truth')
 
 parser.add_argument('--metrics_tsv', '-t', help='tsv file with ost metrics compiled for all systems')
-parser.add_argument('--result_dir', '-r', help='Cofolding results in OST format')
+parser.add_argument('--result_dir', '-r', help='Cofolding results in OF3 format')
 parser.add_argument('--fragalysis_dir', '-f', help='Path to aligned/ directory with fragalysis structures')
 parser.add_argument('--outfile', '-o', help='(optional) Name of the outputput file (default = {args.metrics_tsv}_failure_modes.tsv', default=None)
 
@@ -72,8 +72,12 @@ def calc_pocket_recall(ref_pocket, mdl_pocket):
     true_positives = list(set(ref_pocket) & set(mdl_pocket))
     true_positives = len(true_positives)
     n_positives = len(ref_pocket)
-    pocket_recall = true_positives/n_positives
-    
+
+    try:
+        pocket_recall = true_positives/n_positives
+    except: 
+        pocket_recall = 0 # Weird case where the gt-ligand is not near the receptor?
+
     return pocket_recall
 
 def get_failure_mode(rmsd, lddt_pli, lddt_lp, pocket_recall):
@@ -155,7 +159,7 @@ def main():
         ref_pocket = get_pocket(ref_rec, ref_lig, ch_map, ref=True, cutoff=6.0)
         mdl_pocket = get_pocket(mdl_rec, mdl_lig, ch_map, ref=False, cutoff=6.0)
 
-        print(target, seed, sample)
+        #print(target, seed, sample)
         #print(f'ref: {ref_pocket}')
         #print(f'mdl: {mdl_pocket}')
         

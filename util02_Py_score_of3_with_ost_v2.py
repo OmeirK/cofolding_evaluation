@@ -14,6 +14,8 @@ parser.add_argument('--fragalysis_dir', '-f', help='Path to aligned_files/ direc
 parser.add_argument('--outdir', '-o', help='Directory to store ost comparison results')
 parser.add_argument('--cofolding_model', '-m', help='Specify which cofolding model was used to predict structures. This parameter determines the ligand matching criteria', default='of3', choices=['of3', 'protenix', 'boltz', 'rf3', 'af3'])
 parser.add_argument('--target_merge', '-tm', help='Enable this flag to compare to alternate fragalysis conformations of the target (i.e. compare x0152a to x0152a, x0152b, x0152c, etc)', default=False, action='store_true')
+parser.add_argument('--smi_matching', '-smi', help='Enable this flag to match model ligands to ground truth ligands based on canonical SMILES strings', default=False, action='store_true')
+parser.add_argument('--cpu_count', '-cpu', help='(Optional) Specify how many CPUs to use for parallelization. If not specified, all available CPUs are used', default=None)
 
 args = parser.parse_args()
 
@@ -30,12 +32,12 @@ def check_lig_match(gt_ligs, gt_smis, gt_lines, of3_lig):
     match_ligs = []
     for i, smi in enumerate(gt_smis):
         if smi == of_smi:
-            print('\t', i, smi, of_smi)
+            #print('\t', i, smi, of_smi)
             match_ligs.append(gt_ligs[i])
             tmp_lines += gt_lines[gt_ligs[i]]
 
     if len(tmp_lines) == 0:
-        fail_log.append(f'{of3_lig} failed!\n\tLig_SMI: {of_smi}\n\tGT_SMI_L: {" ".join(gt_smis)}\n')
+        fail_log.append(f'{of3_lig} SMILES MATCHING failed!\n\tLig_SMI: {of_smi}\n\tGT_SMIS: {" ".join(gt_smis)}\n')
 
 
     return match_ligs, tmp_lines, fail_log
@@ -105,7 +107,16 @@ def mp_func(case):
     #print(fragalysis_ligs)
 
     fragalysis_lines = {}
+    fragalysis_smiles = []
     for sdf in fragalysis_ligs:
+        m = Chem.MolFromMolFile(sdf)
+        if m is None:
+            print(f'Cannot read ground-truth ligand {sdf}')
+            continue
+        else:
+            smi = Chem.MolToSmiles(m)
+            fragalysis_smiles.append(smi)
+
         with open(sdf) as f:
             fragalysis_lines[sdf] = f.readlines()
             
@@ -129,8 +140,11 @@ def mp_func(case):
                 outfile = os.path.abspath(f'{case_outdir}/ost-{ml_name}.json')
                 if os.path.exists(outfile):
                     continue
-
-                matching_fragalysis, tmp_lines, fail_log = check_lig_match_resn(fragalysis_ligs, fragalysis_lines, ml)
+                
+                if args.smi_matching:
+                    matching_fragalysis, tmp_lines, fail_log = check_lig_match(fragalysis_ligs, fragalysis_smiles, fragalysis_lines, ml)
+                else:
+                    matching_fragalysis, tmp_lines, fail_log = check_lig_match_resn(fragalysis_ligs, fragalysis_lines, ml)
 
                 #print(ml)
                 #print('\t', matching_fragalysis)
@@ -166,8 +180,12 @@ def main():
     print(f'OST-lig eval for {len(case_l)} targets...')
     
     # Quick multiprocessing implementation
-    with mp.Pool(mp.cpu_count()) as pool:
-        r = list(tqdm.tqdm(pool.imap(mp_func, case_l, chunksize=1)))
+    if args.cpu_count == None:
+        with mp.Pool(mp.cpu_count()) as pool:
+            r = list(tqdm.tqdm(pool.imap(mp_func, case_l, chunksize=1)))
+    else:
+        with mp.Pool(int(args.cpu_count)) as pool: 
+            r = list(tqdm.tqdm(pool.imap(mp_func, case_l, chunksize=1)))
     
 
 if __name__=='__main__':
